@@ -44,5 +44,17 @@ namespace GongSolutions.Wpf.DragDrop
     /// Notifies the drag handler that a drag has been aborted.
     /// </summary>
     void DragCancelled();
+
+    /// <summary>
+    /// Notifies that an exception has occurred upon dragging.
+    /// </summary>
+    /// <param name="ex">
+    ///     The exception that occurrred.
+    /// </param>
+    /// <returns>
+    /// Boolean indicating whether the exception is handled in the drag handler.
+    /// False will rethrow the exception.
+    /// </returns>
+    bool ExceptionOccurred(Exception ex);
   }
 }

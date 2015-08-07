@@ -33,5 +33,11 @@ namespace GongSolutions.Wpf.DragDrop
     public virtual void DragCancelled()
     {
     }
+
+
+    public virtual bool ExceptionOccurred(System.Exception ex)
+    {
+        return false;
+    }
   }
 }

@@ -49,6 +49,12 @@ namespace DefaultsExample
     public virtual void DragCancelled()
     {
     }
+
+
+    public bool ExceptionOccurred(Exception ex)
+    {
+        return false;
+    }
   }
 
   internal class Data : IDropTarget
