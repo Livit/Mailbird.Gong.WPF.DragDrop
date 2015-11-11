@@ -699,6 +699,7 @@ namespace GongSolutions.Wpf.DragDrop
       // Ignore the click if clickCount != 1 or the user has clicked on a scrollbar.
       var elementPosition = e.GetPosition((IInputElement)sender);
       if (e.ClickCount != 1
+          || !(sender is UIElement)
           || (sender as UIElement).IsDragSourceIgnored()
           || (e.Source as UIElement).IsDragSourceIgnored()
           || (e.OriginalSource as UIElement).IsDragSourceIgnored()
@@ -730,7 +731,8 @@ namespace GongSolutions.Wpf.DragDrop
 
       if (m_DragInfo.VisualSourceItem != null && itemsControl != null && itemsControl.CanSelectMultipleItems()) {
         var selectedItems = itemsControl.GetSelectedItems().OfType<object>().ToList();
-        if (selectedItems.Count() > 1 && selectedItems.Contains(m_DragInfo.SourceItem) && (Keyboard.Modifiers & ModifierKeys.Shift) == 0) {
+        if (selectedItems != null && selectedItems.Count() > 1 && selectedItems.Contains(m_DragInfo.SourceItem) && (Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+        {
           m_ClickSupressItem = m_DragInfo.SourceItem;
           e.Handled = true;
         }
