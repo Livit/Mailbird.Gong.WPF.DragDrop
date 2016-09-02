@@ -67,6 +67,8 @@ namespace GongSolutions.Wpf.DragDrop
 
       if (this.VisualTarget is ItemsControl) {
         var itemsControl = (ItemsControl)this.VisualTarget;
+        //System.Diagnostics.Debug.WriteLine(">>> Name = {0}", itemsControl.Name);
+        // get item under the mouse
         item = itemsControl.GetItemContainerAt(this.DropPosition);
         var directlyOverItem = item != null;
 
@@ -75,6 +77,7 @@ namespace GongSolutions.Wpf.DragDrop
         this.VisualTargetFlowDirection = itemsControl.GetItemsPanelFlowDirection();
 
         if (item == null) {
+          // ok, no item found, so maybe we can found an item at top, left, right or bottom
           item = itemsControl.GetItemContainerAt(this.DropPosition, this.VisualTargetOrientation);
           directlyOverItem = false;
         }
@@ -89,8 +92,11 @@ namespace GongSolutions.Wpf.DragDrop
           }
         }
 
-        if (item != null) {
+        if (item != null)
+        {
           itemParent = ItemsControl.ItemsControlFromItemContainer(item);
+          this.VisualTargetOrientation = itemParent.GetItemsPanelOrientation();
+          this.VisualTargetFlowDirection = itemParent.GetItemsPanelFlowDirection();
 
           this.InsertIndex = itemParent.ItemContainerGenerator.IndexFromContainer(item);
           this.TargetCollection = itemParent.ItemsSource ?? itemParent.Items;
@@ -124,7 +130,7 @@ namespace GongSolutions.Wpf.DragDrop
               }
               this.InsertPosition |= RelativeInsertPosition.TargetItemCenter;
             }
-            //System.Diagnostics.Debug.WriteLine("==> DropInfo: {0}, {1}, {2}, Y={3}", this.InsertPosition, item, this.InsertIndex, currentYPos);
+            //System.Diagnostics.Debug.WriteLine("==> DropInfo: pos={0}, idx={1}, Y={2}, Item={3}", this.InsertPosition, this.InsertIndex, currentYPos, item);
           }
           else {
             var currentXPos = e.GetPosition(item).X;
@@ -154,17 +160,17 @@ namespace GongSolutions.Wpf.DragDrop
               }
               this.InsertPosition |= RelativeInsertPosition.TargetItemCenter;
             }
-            //System.Diagnostics.Debug.WriteLine("==> DropInfo: InsPos={0}, InsIndex={1}, X={2}, Item={3}", this.InsertPosition, this.InsertIndex, currentXPos, item);
+            //System.Diagnostics.Debug.WriteLine("==> DropInfo: pos={0}, idx={1}, X={2}, Item={3}", this.InsertPosition, this.InsertIndex, currentXPos, item);
           } 
         }
         else
         {
           this.TargetCollection = itemsControl.ItemsSource ?? itemsControl.Items;
           this.InsertIndex = itemsControl.Items.Count;
-          //System.Diagnostics.Debug.WriteLine("==> DropInfo: {0}, item=NULL, {1}", this.InsertPosition, this.InsertIndex);
+          //System.Diagnostics.Debug.WriteLine("==> DropInfo: pos={0}, item=NULL, idx={1}", this.InsertPosition, this.InsertIndex);
         }
       } else {
-            this.VisualTargetItem = this.VisualTarget; 
+          this.VisualTargetItem = this.VisualTarget; 
       }
     }
 
@@ -342,8 +348,9 @@ namespace GongSolutions.Wpf.DragDrop
   [Flags]
   public enum RelativeInsertPosition
   {
-    BeforeTargetItem = 0,
-    AfterTargetItem = 1,
-    TargetItemCenter = 2
+    None = 0,
+    BeforeTargetItem = 1,
+    AfterTargetItem = 2,
+    TargetItemCenter = 4
   }
 }

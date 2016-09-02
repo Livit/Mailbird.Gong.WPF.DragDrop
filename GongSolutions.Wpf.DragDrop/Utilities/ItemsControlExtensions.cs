@@ -82,7 +82,7 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
       if (itemType != null) {
         return isItemContainer
                  ? (UIElement)child.GetVisualAncestor(itemType, itemsControl)
-                 : (UIElement)child.GetVisualAncestor(itemType);
+                 : (UIElement)child.GetVisualAncestor(itemType, itemsControl.GetType());
       }
 
       return null;
@@ -117,19 +117,44 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
         hitTestGeometry = geometryGroup;
       }
 
-      var hits = new List<DependencyObject>();
+      var hits = new HashSet<DependencyObject>();
 
-      VisualTreeHelper.HitTest(itemsControl, null,
-                               result => {
-                                 var itemContainer = isItemContainer
-                                                       ? result.VisualHit.GetVisualAncestor(itemContainerType, itemsControl)
-                                                       : result.VisualHit.GetVisualAncestor(itemContainerType);
-                                 if (itemContainer != null && !hits.Contains(itemContainer) && ((UIElement)itemContainer).IsVisible == true) {
-                                   hits.Add(itemContainer);
-                                 }
-                                 return HitTestResultBehavior.Continue;
-                               },
-                               new GeometryHitTestParameters(hitTestGeometry));
+      VisualTreeHelper.HitTest(itemsControl,
+        obj =>
+        {
+          if (obj is Viewport3D)
+          {
+            return HitTestFilterBehavior.Stop;
+          }
+          return HitTestFilterBehavior.Continue;
+        },
+        result =>
+        {
+          var itemContainer = isItemContainer
+            ? result.VisualHit.GetVisualAncestor(itemContainerType, itemsControl)
+            : result.VisualHit.GetVisualAncestor(itemContainerType, itemsControl.GetType());
+          if (itemContainer != null && ((UIElement) itemContainer).IsVisible == true)
+          {
+            var tvItem = itemContainer as TreeViewItem;
+            if (tvItem != null)
+            {
+              var tv = tvItem.GetVisualAncestor<TreeView>();
+              if (tv == itemsControl)
+              {
+                hits.Add(itemContainer);
+              }
+            }
+            else
+            {
+              if (itemsControl.ItemContainerGenerator.IndexFromContainer(itemContainer) >= 0)
+              {
+                hits.Add(itemContainer);
+              }
+            }
+          }
+          return HitTestResultBehavior.Continue;
+        },
+        new GeometryHitTestParameters(hitTestGeometry));
 
       return GetClosest(itemsControl, hits, position, searchDirection);
     }
@@ -204,7 +229,6 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
       if (itemsPresenter != null && VisualTreeHelper.GetChildrenCount(itemsPresenter) > 0) {
         var itemsPanel = VisualTreeHelper.GetChild(itemsPresenter, 0);
         var orientationProperty = itemsPanel.GetType().GetProperty("Orientation", typeof(Orientation));
-
         if (orientationProperty != null) {
           return (Orientation)orientationProperty.GetValue(itemsPanel, null);
         }
@@ -216,12 +240,10 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
 
     public static FlowDirection GetItemsPanelFlowDirection(this ItemsControl itemsControl)
     {
-      var itemsPresenter = itemsControl.GetVisualDescendent<ItemsPresenter>();
-
+      var itemsPresenter = itemsControl.GetVisualDescendent<ItemsPresenter>() ?? itemsControl.GetVisualDescendent<ScrollContentPresenter>() as UIElement;
       if (itemsPresenter != null && VisualTreeHelper.GetChildrenCount(itemsPresenter) > 0) {
         var itemsPanel = VisualTreeHelper.GetChild(itemsPresenter, 0);
         var flowDirectionProperty = itemsPanel.GetType().GetProperty("FlowDirection", typeof(FlowDirection));
-
         if (flowDirectionProperty != null) {
           return (FlowDirection)flowDirectionProperty.GetValue(itemsPanel, null);
         }
@@ -346,7 +368,7 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
       }
     }
 
-    private static UIElement GetClosest(ItemsControl itemsControl, List<DependencyObject> items,
+    private static UIElement GetClosest(ItemsControl itemsControl, IEnumerable<DependencyObject> items,
                                         Point position, Orientation searchDirection)
     {
       //Console.WriteLine("GetClosest - {0}", itemsControl.ToString());
@@ -367,12 +389,17 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
             var hyp = Math.Sqrt(Math.Pow(xDiff, 2d) + Math.Pow(yDiff, 2d));
             distance = Math.Abs(hyp);
           } else {
+            var itemParent = ItemsControl.ItemsControlFromItemContainer(uiElement);
+            if (itemParent != null && itemParent != itemsControl)
+            {
+              searchDirection = itemParent.GetItemsPanelOrientation();
+            }
             switch (searchDirection) {
               case Orientation.Horizontal:
-                distance = Math.Abs(position.X - p.X);
+                distance = position.X <= p.X ? p.X - position.X : position.X - uiElement.RenderSize.Width - p.X;
                 break;
               case Orientation.Vertical:
-                distance = Math.Abs(position.Y - p.Y);
+                distance = position.Y <= p.Y ? p.Y - position.Y : position.Y - uiElement.RenderSize.Height - p.Y;
                 break;
             }
           }

@@ -1,12 +1,12 @@
 ﻿<Window x:Class="DefaultsExample.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
         xmlns:local="clr-namespace:DefaultsExample"
+        xmlns:dd="urn:gong-wpf-dragdrop"
         Title="Gong Solutions Drag'n'Drop: Defaults Example"
         WindowStartupLocation="CenterScreen"
-        Height="600"
-        Width="800">
+        Height="700"
+        Width="900">
 
   <Window.DataContext>
     <local:Data />
@@ -18,6 +18,7 @@
               BorderBrush="Gray"
               BorderThickness="1"
               CornerRadius="2"
+              SnapsToDevicePixels="True"
               Margin="1">
         <StackPanel Orientation="Horizontal">
           <Image Source="/icon.png"
@@ -204,6 +205,7 @@
                  dd:DragDrop.IsDragSource="True"
                  dd:DragDrop.IsDropTarget="True"
                  dd:DragDrop.UseDefaultEffectDataTemplate="True"
+                 dd:DragDrop.UseVisualSourceItemSizeForDragAdorner="True"
                  dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}" />
         <ListBox Grid.Column="1"
                  Grid.Row="1"
@@ -553,11 +555,16 @@
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
               <TextBlock Text="::"
+                         dd:DragDrop.DragSourceIgnore="False"
+                         Width="15"
+                         TextAlignment="Center"
+                         Margin="-4 -1 0 -1"
+                         Background="Transparent"
                          FontWeight="Bold"
                          Grid.Column="0" />
               <TextBox Grid.Column="1"
                        Text="{Binding Name}"
-                       Margin="5 1 5 1" />
+                       Margin="0 1 4 1" />
             </Grid>
           </DataTemplate>
           <DataTemplate x:Key="CloningAdornerTemplate"
@@ -579,7 +586,13 @@
                  dd:DragDrop.DragAdornerTemplate="{StaticResource CloningAdornerTemplate}"
                  dd:DragDrop.UseDefaultDragAdorner="True"
                  dd:DragDrop.IsDragSource="True"
-                 dd:DragDrop.IsDropTarget="True" />
+                 dd:DragDrop.IsDropTarget="True">
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+              <Setter Property="dd:DragDrop.DragSourceIgnore" Value="True" />
+            </Style>
+          </ListBox.ItemContainerStyle>
+        </ListBox>
         <ListBox Grid.Column="1"
                  ItemsSource="{Binding ClonableCollection2}"
                  SelectionMode="Extended"
@@ -1305,6 +1318,143 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+      </Grid>
+    </TabItem>
+
+    <TabItem Header="List in List Example">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <ItemsControl Grid.Column="0"
+                      ItemsSource="{Binding Collection1}"
+                      dd:DragDrop.IsDragSource="True"
+                      dd:DragDrop.UseDefaultDragAdorner="True">
+        </ItemsControl>
+
+        <ListBox Grid.Column="1" x:Name="outer" dd:DragDrop.IsDropTarget="True">
+          <Border BorderThickness="1" BorderBrush="Black">
+            <ListBox Height="200" Width="200" x:Name="inner1" Background="Aquamarine"
+                 ItemsSource="{Binding Collection2}"
+                 dd:DragDrop.IsDragSource="True"
+                 dd:DragDrop.IsDropTarget="True"
+                 dd:DragDrop.UseDefaultDragAdorner="True">
+            </ListBox>
+          </Border>
+          <Border BorderThickness="1" BorderBrush="Black">
+            <ListBox Height="200" Width="200" x:Name="inner2"
+                 dd:DragDrop.IsDragSource="True"
+                 dd:DragDrop.IsDropTarget="True"
+                 dd:DragDrop.UseDefaultDragAdorner="True">
+              <ListBoxItem Content="Test1"></ListBoxItem>
+            </ListBox>
+          </Border>
+        </ListBox>
+
+      </Grid>
+    </TabItem>
+    
+    <TabItem Header="Issue #188 wrong item on drag start">
+      <Grid>
+        <ItemsControl
+            dd:DragDrop.IsDropTarget="True"
+            dd:DragDrop.IsDragSource="True"
+            dd:DragDrop.UseDefaultDragAdorner="True"
+            dd:DragDrop.DefaultDragAdornerOpacity="0.6"
+            Background="Transparent">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type local:ItemViewModel}">
+              <GroupBox Margin="0,0,0,10" Background="Transparent">
+                <GroupBox.Header>
+                  <TextBlock>
+                    <Run Text="Item " />
+                    <Run Text="{Binding Index, Mode=OneWay, StringFormat={}Index {0}}" />
+                  </TextBlock>
+                </GroupBox.Header>
+                <Grid Margin="10">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+
+                  <ComboBox Grid.Column="0" VerticalAlignment="Center" Height="25" MinWidth="70" Margin="10,0,0,0" />
+                  <Button Grid.Column="1" Margin="30,0,0,0" Content="..." Width="70" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+              </GroupBox>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+          <local:ItemViewModel Index="0" />
+          <local:ItemViewModel Index="1" />
+          <local:ItemViewModel Index="2" />
+          <local:ItemViewModel Index="3" />
+        </ItemsControl>
+      </Grid>
+    </TabItem>
+
+    <TabItem Header="Issue #88">
+      <Grid>
+        <TreeView ItemsSource="{Binding TreeCollection}" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True">
+          <TreeView.ItemContainerStyle>
+            <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+              <Setter Property="ItemsPanel">
+                <Setter.Value>
+                  <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
+                  </ItemsPanelTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </TreeView.ItemContainerStyle>
+          <TreeView.ItemTemplate>
+            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding Caption}" Margin="2" />
+            </HierarchicalDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+      </Grid>
+    </TabItem>
+
+    <TabItem Header="Issue #146">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <ListView Grid.Row="0" Margin="4" ItemsSource="{Binding TreeCollection}" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True">
+          <ListView.ItemTemplate>
+            <DataTemplate>
+              <Grid AllowDrop="True">
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="{Binding Caption}" />
+                <!-- This nested ListView contains some items and problem occurs when I start dragging parent item from position in nested ListView OR dragging other item ovet this item -->
+                <ListView Grid.Row="1" ItemsSource="{Binding Children}" AllowDrop="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+              </Grid>
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
+        <ListView Grid.Row="1" Margin="4" ItemsSource="{Binding TreeCollection2}" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True">
+          <ListView.ItemTemplate>
+            <DataTemplate>
+              <Grid AllowDrop="True">
+                <Grid.RowDefinitions>
+                  <RowDefinition />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="{Binding Caption}" />
+                <!-- This nested ListView contains some items and problem occurs when I start dragging parent item from position in nested ListView OR dragging other item ovet this item -->
+                <ListView Grid.Row="1" MinHeight="25" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" ItemsSource="{Binding Children}" AllowDrop="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+              </Grid>
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
       </Grid>
     </TabItem>
   </TabControl>

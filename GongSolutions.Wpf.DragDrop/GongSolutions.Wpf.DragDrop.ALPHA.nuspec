@@ -2,23 +2,24 @@
 <package>
     <metadata>
         <id>gong-wpf-dragdrop</id>
-        <version>1.0.0-ALPHA011-MB1</version>
+        <version>1.0.0-ALPHA017-MB1</version>
         <title>gong-wpf-dragdrop</title>
         <authors>Jan Karger (punker76), Steven Kirk, mitchell.jon</authors>
-        <owners>Jan Karger (punker76)</owners>
+        <owners>punker76</owners>
         <licenseUrl>https://github.com/punker76/gong-wpf-dragdrop#license</licenseUrl>
         <projectUrl>https://github.com/punker76/gong-wpf-dragdrop</projectUrl>
         <iconUrl>https://raw.github.com/punker76/gong-wpf-dragdrop/master/GongSolutions.Wpf.DragDrop.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>A Drag'n'Drop Framework for WPF</description>
-        <copyright>Copyright © 2013-2015</copyright>
-        <tags>WPF UI Framework Lib Toolkit .NET XAML</tags>
+        <description>An easy to use drag'n'drop framework for WPF applications.</description>
+        <copyright>Copyright © 2013-2016</copyright>
+        <tags>WPF UI Framework Library Toolkit .NET XAML</tags>
         <dependencies>
             <group targetFramework="net35">
                 <dependency id="WPFToolkit" version="3.5.50211.1"/>
             </group>
             <group targetFramework="net40" />
             <group targetFramework="net45" />
+            <group targetFramework="net46" />
         </dependencies>
     </metadata>
     <files>

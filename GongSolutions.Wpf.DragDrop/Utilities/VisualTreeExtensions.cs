@@ -68,15 +68,25 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
       return null;
     }
 
-    public static DependencyObject GetVisualAncestor(this DependencyObject d, Type type)
+    /// <summary>
+    /// find the visual ancestor item by type
+    /// </summary>
+    public static DependencyObject GetVisualAncestor(this DependencyObject d, Type itemSearchType, Type itemContainerSearchType)
     {
-      var item = VisualTreeHelper.GetParent(d.FindVisualTreeRoot());
+      var visualTreeRoot = d.FindVisualTreeRoot();
+      var currentVisual = VisualTreeHelper.GetParent(visualTreeRoot);
 
-      while (item != null && type != null) {
-        if (item.GetType() == type || item.GetType().IsSubclassOf(type)) {
-          return item;
+      while (currentVisual != null && itemSearchType != null) {
+        var currentVisualType = currentVisual.GetType();
+        if (currentVisualType == itemSearchType || currentVisualType.IsSubclassOf(itemSearchType)) {
+          return currentVisual;
         }
-        item = VisualTreeHelper.GetParent(item);
+        if (itemContainerSearchType != null && itemContainerSearchType.IsAssignableFrom(currentVisualType))
+        {
+          // ok, we found an ItemsControl (maybe an empty)
+          return null;
+        }
+        currentVisual = VisualTreeHelper.GetParent(currentVisual);
       }
 
       return null;
@@ -85,16 +95,17 @@ namespace GongSolutions.Wpf.DragDrop.Utilities
     /// <summary>
     /// find the visual ancestor by type and go through the visual tree until the given itemsControl will be found
     /// </summary>
-    public static DependencyObject GetVisualAncestor(this DependencyObject d, Type type, ItemsControl itemsControl)
+    public static DependencyObject GetVisualAncestor(this DependencyObject d, Type itemSearchType, ItemsControl itemsControl)
     {
-      var item = VisualTreeHelper.GetParent(d.FindVisualTreeRoot());
+      var visualTreeRoot = d.FindVisualTreeRoot();
+      var item = VisualTreeHelper.GetParent(visualTreeRoot);
       DependencyObject lastFoundItemByType = null;
 
-      while (item != null && type != null) {
+      while (item != null && itemSearchType != null) {
         if (item == itemsControl) {
           return lastFoundItemByType;
         }
-        if ((item.GetType() == type || item.GetType().IsSubclassOf(type))
+        if ((item.GetType() == itemSearchType || item.GetType().IsSubclassOf(itemSearchType))
             && (itemsControl == null || itemsControl.ItemContainerGenerator.IndexFromContainer(item) != -1)) {
           lastFoundItemByType = item;
         }

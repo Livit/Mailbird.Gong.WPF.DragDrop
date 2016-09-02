@@ -50,10 +50,9 @@ namespace DefaultsExample
     {
     }
 
-
-    public bool ExceptionOccurred(Exception ex)
+    public bool TryCatchOccurredException(Exception exception)
     {
-        return false;
+      return false;
     }
   }
 
@@ -272,5 +271,10 @@ namespace DefaultsExample
     }
 
     private string m_Group;
+  }
+
+  internal class ItemViewModel
+  {
+    public int Index { get; set; }
   }
 }
