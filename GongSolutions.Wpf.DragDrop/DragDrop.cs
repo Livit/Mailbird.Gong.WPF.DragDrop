@@ -507,11 +507,9 @@ namespace GongSolutions.Wpf.DragDrop
                 item.ContentTemplate = template;
                 item.ContentTemplateSelector = templateSelector;
 
-                Rect bounds = new Rect(0, 0, 100, 30);
-
                 if (useVisualSourceItemSizeForDragAdorner)
                 {
-                    bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
+                    var bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
                     item.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
                 }
 
@@ -531,27 +529,30 @@ namespace GongSolutions.Wpf.DragDrop
                 var displacement = 4;
                 if (count > 1)
                 {
+                    grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(0, GridUnitType.Auto) });
+                    grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(0, GridUnitType.Auto) });
+                    for (var i = 0; i < Math.Min(count - 1, 10); i++)
+                    {
+                        grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(displacement, GridUnitType.Pixel) });
+                        grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(displacement, GridUnitType.Pixel) });
+                    }
                     for (var i = 0; i < Math.Min(count - 1, 10); i++)
                     {
                         var stackBottom = new Border();
                         stackBottom.Background = GetStackBackground(m_DragInfo.VisualSource);
                         stackBottom.BorderBrush = GetStackBorderBrush(m_DragInfo.VisualSource);
-                        stackBottom.Height = displacement;
-                        stackBottom.Width = bounds.Width + 2;
-                        stackBottom.Margin = new Thickness(displacement * (i + 1), bounds.Height + displacement * i + 2, 0, 0);
                         stackBottom.BorderThickness = new Thickness(1, 0, 1, 1);
-                        stackBottom.HorizontalAlignment = HorizontalAlignment.Left;
-                        stackBottom.VerticalAlignment = VerticalAlignment.Top;
+                        stackBottom.Margin = new Thickness(displacement * (i + 1), 0, 0, 0);
+                        Grid.SetRow(stackBottom, i + 1);
+                        Grid.SetColumnSpan(stackBottom, i + 2);
 
                         var stackRight = new Border();
                         stackRight.Background = GetStackBackground(m_DragInfo.VisualSource);
                         stackRight.BorderBrush = GetStackBorderBrush(m_DragInfo.VisualSource);
-                        stackRight.Height = bounds.Height - displacement + 2;
-                        stackRight.Width = displacement;
-                        stackRight.Margin = new Thickness(bounds.Width + (displacement) * i + 2, displacement * (i + 1), 0, 0);
                         stackRight.BorderThickness = new Thickness(0, 1, 1, 0);
-                        stackRight.HorizontalAlignment = HorizontalAlignment.Left;
-                        stackRight.VerticalAlignment = VerticalAlignment.Top;
+                        stackRight.Margin = new Thickness(0, displacement * (i + 1), 0, 0);
+                        Grid.SetColumn(stackRight, i + 1);
+                        Grid.SetRowSpan(stackRight, i + 1);
 
                         grid.Children.Add(stackBottom);
                         grid.Children.Add(stackRight);
