@@ -24,7 +24,7 @@ namespace GongSolutions.Wpf.DragDrop
     /// </summary>
     public static readonly DependencyProperty DragDropCopyKeyStateProperty =
       DependencyProperty.RegisterAttached("DragDropCopyKeyState", typeof(DragDropKeyStates), typeof(DragDrop), new PropertyMetadata(default(DragDropKeyStates)));
-
+        
     /// <summary>
     /// Gets the drag drop copy key state indicating the effect of the drag drop operation.
     /// </summary>
@@ -40,9 +40,48 @@ namespace GongSolutions.Wpf.DragDrop
     {
       target.SetValue(DragDropCopyKeyStateProperty, value);
     }
+    
+    public static readonly DependencyProperty ShowAdornerItemsInStackProperty =
+    DependencyProperty.RegisterAttached("ShowAdornerItemsInStack", typeof(bool), typeof(DragDrop), new PropertyMetadata(false));
+
+    public static bool GetShowAdornerItemsInStack(UIElement target)
+    {
+        return (bool)target.GetValue(ShowAdornerItemsInStackProperty);
+    }
+
+    public static void SetShowAdornerItemsInStack(UIElement target, bool value)
+    {
+        target.SetValue(ShowAdornerItemsInStackProperty, value);
+    }
+
+    public static readonly DependencyProperty StackBackgroundProperty =
+    DependencyProperty.RegisterAttached("StackBackground", typeof(SolidColorBrush), typeof(DragDrop), new PropertyMetadata(null));
+
+    public static SolidColorBrush GetStackBackground(UIElement target)
+    {
+        return (SolidColorBrush)target.GetValue(StackBackgroundProperty);
+    }
+
+    public static void SetStackBackground(UIElement target, SolidColorBrush value)
+    {
+        target.SetValue(StackBackgroundProperty, value);
+    }
+
+    public static readonly DependencyProperty StackBorderBrushProperty =
+    DependencyProperty.RegisterAttached("StackBorderBrush", typeof(SolidColorBrush), typeof(DragDrop), new PropertyMetadata(null));
+
+    public static SolidColorBrush GetStackBorderBrush(UIElement target)
+    {
+        return (SolidColorBrush)target.GetValue(StackBorderBrushProperty);
+    }
+
+    public static void SetStackBorderBrush(UIElement target, SolidColorBrush value)
+    {
+        target.SetValue(StackBorderBrushProperty, value);
+    }
 
     public static readonly DependencyProperty DragAdornerTemplateProperty =
-      DependencyProperty.RegisterAttached("DragAdornerTemplate", typeof(DataTemplate), typeof(DragDrop));
+    DependencyProperty.RegisterAttached("DragAdornerTemplate", typeof(DataTemplate), typeof(DragDrop));
 
     public static DataTemplate GetDragAdornerTemplate(UIElement target)
     {
@@ -436,6 +475,7 @@ namespace GongSolutions.Wpf.DragDrop
     {
       var template = GetDragAdornerTemplate(m_DragInfo.VisualSource);
       var templateSelector = GetDragAdornerTemplateSelector(m_DragInfo.VisualSource);
+            var showInStack = GetShowAdornerItemsInStack(m_DragInfo.VisualSource);
 
       UIElement adornment = null;
 
@@ -458,39 +498,108 @@ namespace GongSolutions.Wpf.DragDrop
       }
 
       if (template != null || templateSelector != null) {
-        if (m_DragInfo.Data is IEnumerable && !(m_DragInfo.Data is string)) {
-          if (!useDefaultDragAdorner && ((IEnumerable)m_DragInfo.Data).Cast<object>().Count() <= 10) {
-            var itemsControl = new ItemsControl();
-            itemsControl.ItemsSource = (IEnumerable)m_DragInfo.Data;
-            itemsControl.ItemTemplate = template;
-            itemsControl.ItemTemplateSelector = templateSelector;
-
-            if (useVisualSourceItemSizeForDragAdorner)
+        if (showInStack)
+        {
+            if (!useDefaultDragAdorner)
             {
-              var bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
-              itemsControl.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
+                var item = new ContentPresenter();
+                item.Content = (m_DragInfo.Data is IEnumerable && !(m_DragInfo.Data is string)) ? ((IEnumerable)m_DragInfo.Data).Cast<object>().FirstOrDefault() : m_DragInfo.Data;
+                item.ContentTemplate = template;
+                item.ContentTemplateSelector = templateSelector;
+
+                Rect bounds = new Rect(0, 0, 100, 30);
+
+                if (useVisualSourceItemSizeForDragAdorner)
+                {
+                    bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
+                    item.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
+                }
+
+                var count = (m_DragInfo.Data is IEnumerable && !(m_DragInfo.Data is string)) ? ((IEnumerable)m_DragInfo.Data).Cast<object>().Count() : 1;
+
+                var border = new Border();
+                border.Background = GetStackBackground(m_DragInfo.VisualSource);
+                border.BorderBrush = GetStackBorderBrush(m_DragInfo.VisualSource);
+                border.BorderThickness = new Thickness(1);
+                border.Child = item;
+                border.HorizontalAlignment = HorizontalAlignment.Left;
+                border.VerticalAlignment = VerticalAlignment.Top;
+
+                var grid = new Grid();
+                grid.Children.Add(border);
+
+                var displacement = 4;
+                if (count > 1)
+                {
+                    for (var i = 0; i < Math.Min(count - 1, 10); i++)
+                    {
+                        var stackBottom = new Border();
+                        stackBottom.Background = GetStackBackground(m_DragInfo.VisualSource);
+                        stackBottom.BorderBrush = GetStackBorderBrush(m_DragInfo.VisualSource);
+                        stackBottom.Height = displacement;
+                        stackBottom.Width = bounds.Width + 2;
+                        stackBottom.Margin = new Thickness(displacement * (i + 1), bounds.Height + displacement * i + 2, 0, 0);
+                        stackBottom.BorderThickness = new Thickness(1, 0, 1, 1);
+                        stackBottom.HorizontalAlignment = HorizontalAlignment.Left;
+                        stackBottom.VerticalAlignment = VerticalAlignment.Top;
+
+                        var stackRight = new Border();
+                        stackRight.Background = GetStackBackground(m_DragInfo.VisualSource);
+                        stackRight.BorderBrush = GetStackBorderBrush(m_DragInfo.VisualSource);
+                        stackRight.Height = bounds.Height - displacement + 2;
+                        stackRight.Width = displacement;
+                        stackRight.Margin = new Thickness(bounds.Width + (displacement) * i + 2, displacement * (i + 1), 0, 0);
+                        stackRight.BorderThickness = new Thickness(0, 1, 1, 0);
+                        stackRight.HorizontalAlignment = HorizontalAlignment.Left;
+                        stackRight.VerticalAlignment = VerticalAlignment.Top;
+
+                        grid.Children.Add(stackBottom);
+                        grid.Children.Add(stackRight);
+                    }
+                }
+
+                adornment = grid;
+
             }
+        }
+        else {
+            if (m_DragInfo.Data is IEnumerable && !(m_DragInfo.Data is string))
+            {
+                if (!useDefaultDragAdorner && ((IEnumerable)m_DragInfo.Data).Cast<object>().Count() <= 10)
+                {
+                    var itemsControl = new ItemsControl();
+                    itemsControl.ItemsSource = (IEnumerable)m_DragInfo.Data;
+                    itemsControl.ItemTemplate = template;
+                    itemsControl.ItemTemplateSelector = templateSelector;
 
-            // The ItemsControl doesn't display unless we create a grid to contain it.
-            // Not quite sure why we need this...
-            var grid = new Grid();
-            grid.Children.Add(itemsControl);
-            adornment = grid;
-          }
-        } else {
-          var contentPresenter = new ContentPresenter();
-          contentPresenter.Content = m_DragInfo.Data;
-          contentPresenter.ContentTemplate = template;
-          contentPresenter.ContentTemplateSelector = templateSelector;
+                    if (useVisualSourceItemSizeForDragAdorner)
+                    {
+                        var bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
+                        itemsControl.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
+                    }
 
-          if (useVisualSourceItemSizeForDragAdorner)
-          {
-            var bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
-            contentPresenter.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
-            contentPresenter.SetValue(FrameworkElement.MinHeightProperty, bounds.Height);
-          }
+                    // The ItemsControl doesn't display unless we create a grid to contain it.
+                    // Not quite sure why we need this...
+                    var grid = new Grid();
+                    grid.Children.Add(itemsControl);
+                    adornment = grid;
+                }
+            }
+            else {
+                var contentPresenter = new ContentPresenter();
+                contentPresenter.Content = m_DragInfo.Data;
+                contentPresenter.ContentTemplate = template;
+                contentPresenter.ContentTemplateSelector = templateSelector;
 
-          adornment = contentPresenter;
+                if (useVisualSourceItemSizeForDragAdorner)
+                {
+                    var bounds = VisualTreeHelper.GetDescendantBounds(m_DragInfo.VisualSourceItem);
+                    contentPresenter.SetValue(FrameworkElement.MinWidthProperty, bounds.Width);
+                    contentPresenter.SetValue(FrameworkElement.MinHeightProperty, bounds.Height);
+                }
+
+                adornment = contentPresenter;
+            }
         }
       }
 
