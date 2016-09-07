@@ -55,13 +55,13 @@
           <RowDefinition />
         </Grid.RowDefinitions>
 
-        <ListBox Grid.Column="0"
+                <ListBox Grid.Column="0"
                  Grid.Row="1"
                  ItemsSource="{Binding Collection1}"
                  dd:DragDrop.IsDragSource="True"
                  dd:DragDrop.IsDropTarget="True"
                  dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">
-          <ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemTemplate>
             <DataTemplate>
               <FlowDocumentScrollViewer IsSelectionEnabled="False"
                                         IsHitTestVisible="False">
@@ -168,6 +168,11 @@
                  dd:DragDrop.IsDragSource="True"
                  dd:DragDrop.IsDropTarget="True"
                  dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}"
+                 dd:DragDrop.MaxAdornerItems="3"
+                 dd:DragDrop.ShowAdornerItemsInStack="true"
+                 dd:DragDrop.StackBackground="#11404040"
+                 dd:DragDrop.StackBorderBrush="#FF939393"
+                 dd:DragDrop.UseVisualSourceItemSizeForDragAdorner="True"
                  MouseDoubleClick="Control_OnMouseDoubleClick" />
         <ListBox Grid.Column="1"
                  Grid.Row="1"

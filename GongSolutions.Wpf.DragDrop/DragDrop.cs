@@ -80,6 +80,19 @@ namespace GongSolutions.Wpf.DragDrop
         target.SetValue(StackBorderBrushProperty, value);
     }
 
+    public static readonly DependencyProperty MaxAdornerItemsProperty =
+    DependencyProperty.RegisterAttached("MaxAdornerItems", typeof(int), typeof(DragDrop), new PropertyMetadata(10));
+
+    public static int GetMaxAdornerItems(UIElement target)
+    {
+        return (int)target.GetValue(MaxAdornerItemsProperty);
+    }
+
+    public static void SetMaxAdornerItems(UIElement target, int value)
+    {
+        target.SetValue(MaxAdornerItemsProperty, value);
+    }
+
     public static readonly DependencyProperty DragAdornerTemplateProperty =
     DependencyProperty.RegisterAttached("DragAdornerTemplate", typeof(DataTemplate), typeof(DragDrop));
 
@@ -481,6 +494,7 @@ namespace GongSolutions.Wpf.DragDrop
 
       var useDefaultDragAdorner = GetUseDefaultDragAdorner(m_DragInfo.VisualSource);
       var useVisualSourceItemSizeForDragAdorner = GetUseVisualSourceItemSizeForDragAdorner(m_DragInfo.VisualSource);
+      var maxAdornerItems = GetMaxAdornerItems(m_DragInfo.VisualSource);
 
       if (template == null && templateSelector == null && useDefaultDragAdorner) {
         var bs = CaptureScreen(m_DragInfo.VisualSourceItem, m_DragInfo.VisualSourceFlowDirection);
@@ -531,12 +545,12 @@ namespace GongSolutions.Wpf.DragDrop
                 {
                     grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(0, GridUnitType.Auto) });
                     grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(0, GridUnitType.Auto) });
-                    for (var i = 0; i < Math.Min(count - 1, 10); i++)
+                    for (var i = 0; i < Math.Min(count, maxAdornerItems) - 1; i++)
                     {
                         grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(displacement, GridUnitType.Pixel) });
                         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(displacement, GridUnitType.Pixel) });
                     }
-                    for (var i = 0; i < Math.Min(count - 1, 10); i++)
+                    for (var i = 0; i < Math.Min(count, maxAdornerItems) - 1; i++)
                     {
                         var stackBottom = new Border();
                         stackBottom.Background = GetStackBackground(m_DragInfo.VisualSource);
@@ -566,7 +580,7 @@ namespace GongSolutions.Wpf.DragDrop
         else {
             if (m_DragInfo.Data is IEnumerable && !(m_DragInfo.Data is string))
             {
-                if (!useDefaultDragAdorner && ((IEnumerable)m_DragInfo.Data).Cast<object>().Count() <= 10)
+                if (!useDefaultDragAdorner && ((IEnumerable)m_DragInfo.Data).Cast<object>().Count() <= maxAdornerItems)
                 {
                     var itemsControl = new ItemsControl();
                     itemsControl.ItemsSource = (IEnumerable)m_DragInfo.Data;
