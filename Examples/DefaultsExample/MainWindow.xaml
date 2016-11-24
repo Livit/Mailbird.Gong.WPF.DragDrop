@@ -60,7 +60,9 @@
                  ItemsSource="{Binding Collection1}"
                  dd:DragDrop.IsDragSource="True"
                  dd:DragDrop.IsDropTarget="True"
-                 dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}">
+                 dd:DragDrop.DragAdornerTemplate="{StaticResource DragAdorner}"
+                 dd:DragDrop.AllowAdornerOnScrollBar="True">
+                    
                     <ItemsControl.ItemTemplate>
             <DataTemplate>
               <FlowDocumentScrollViewer IsSelectionEnabled="False"

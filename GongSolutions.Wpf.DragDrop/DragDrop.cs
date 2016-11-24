@@ -168,7 +168,20 @@ namespace GongSolutions.Wpf.DragDrop
 
     public static void SetUseDefaultEffectDataTemplate(UIElement target, bool value)
     {
-      target.SetValue(UseDefaultEffectDataTemplateProperty, value);
+        target.SetValue(UseDefaultEffectDataTemplateProperty, value);
+    }
+
+    public static readonly DependencyProperty AllowAdornerOnScrollBarProperty =
+        DependencyProperty.RegisterAttached("AllowAdornerOnScrollBar", typeof(bool), typeof(DragDrop), new PropertyMetadata(false));
+
+    public static bool GetAllowAdornerOnScrollBar(UIElement target)
+    {
+        return (bool)target.GetValue(AllowAdornerOnScrollBarProperty);
+    }
+
+    public static void SetAllowAdornerOnScrollBar(UIElement target, bool value)
+    {
+        target.SetValue(AllowAdornerOnScrollBarProperty, value);
     }
 
     public static readonly DependencyProperty EffectNoneAdornerTemplateProperty =
@@ -982,7 +995,7 @@ namespace GongSolutions.Wpf.DragDrop
     private static void DropTarget_PreviewDragOver(object sender, DragEventArgs e)
     {
       var elementPosition = e.GetPosition((IInputElement)sender);
-      if (HitTestUtilities.HitTest4Type<ScrollBar>(sender, elementPosition)
+      if ((m_DragInfo != null && !GetAllowAdornerOnScrollBar(m_DragInfo.VisualSource) && HitTestUtilities.HitTest4Type<ScrollBar>(sender, elementPosition))
           || HitTestUtilities.HitTest4GridViewColumnHeader(sender, elementPosition)
           || HitTestUtilities.HitTest4DataGridTypesOnDragOver(sender, elementPosition)) {
         e.Effects = DragDropEffects.None;
