@@ -463,7 +463,6 @@ namespace GongSolutions.Wpf.DragDrop
         
         if (window != null)
         {
-          window.AllowDrop = true;
           window.DragOver += Window_DragOver;
           window.QueryContinueDrag += Window_QueryContinueDrag;
         }
@@ -475,7 +474,6 @@ namespace GongSolutions.Wpf.DragDrop
         uiElement.QueryContinueDrag -= DragSource_QueryContinueDrag;
         if (window != null)
         {
-          window.AllowDrop = false;
           window.DragOver -= Window_DragOver;
           window.QueryContinueDrag -= Window_QueryContinueDrag;
         }
@@ -922,11 +920,14 @@ namespace GongSolutions.Wpf.DragDrop
 
     private static void Window_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
     {
-      DragAdorner = null;
-      EffectAdorner = null;
-      DropTargetAdorner = null;
+      if (e.Action == DragAction.Cancel || e.EscapePressed || e.KeyStates != DragDropKeyStates.LeftMouseButton)
+      {
+        DragAdorner = null;
+        EffectAdorner = null;
+        DropTargetAdorner = null;
 
-      Mouse.OverrideCursor = null;
+        Mouse.OverrideCursor = null;
+      }
     }
     
     private static void Window_DragOver(object sender, DragEventArgs e)
@@ -1041,9 +1042,25 @@ namespace GongSolutions.Wpf.DragDrop
 
               try {
                 m_DragInProgress = true;
+
+                var prevValue = false;
+                Window window = null;
+                if (m_DragInfo != null && GetAlwaysShowAdorner(m_DragInfo.VisualSource))
+                {
+                  window = Window.GetWindow(m_DragInfo.VisualSource);
+                  if (window != null)
+                  {
+                    prevValue = window.AllowDrop;
+                    window.AllowDrop = true;
+                  }
+                }
+
                 var result = System.Windows.DragDrop.DoDragDrop(m_DragInfo.VisualSource, data, m_DragInfo.Effects);
                 if (result == DragDropEffects.None)
                   dragHandler.DragCancelled();
+
+                if (window != null)
+                  window.AllowDrop = prevValue;
               }
               catch (Exception ex) {
                 if (!dragHandler.TryCatchOccurredException(ex)) {
