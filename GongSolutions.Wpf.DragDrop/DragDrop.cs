@@ -464,6 +464,8 @@ namespace GongSolutions.Wpf.DragDrop
         if (window != null)
         {
           window.DragOver += Window_DragOver;
+          window.DragEnter += Window_DragEnter;
+          window.DragLeave += Window_DragLeave;
           window.QueryContinueDrag += Window_QueryContinueDrag;
         }
       }
@@ -475,6 +477,8 @@ namespace GongSolutions.Wpf.DragDrop
         if (window != null)
         {
           window.DragOver -= Window_DragOver;
+          window.DragEnter -= Window_DragEnter;
+          window.DragLeave -= Window_DragLeave;
           window.QueryContinueDrag -= Window_QueryContinueDrag;
         }
       }
@@ -929,7 +933,19 @@ namespace GongSolutions.Wpf.DragDrop
         Mouse.OverrideCursor = null;
       }
     }
-    
+
+    private static void Window_DragLeave(object sender, DragEventArgs e)
+    {
+      e.Effects = DragDropEffects.None;
+      e.Handled = true;
+    }
+
+    private static void Window_DragEnter(object sender, DragEventArgs e)
+    {
+      e.Effects = DragDropEffects.None;
+      e.Handled = true;
+    }
+
     private static void Window_DragOver(object sender, DragEventArgs e)
     {
       if (m_DragInfo != null && GetAlwaysShowAdorner(m_DragInfo.VisualSource))
@@ -1054,7 +1070,7 @@ namespace GongSolutions.Wpf.DragDrop
                     window.AllowDrop = true;
                   }
                 }
-
+                
                 var result = System.Windows.DragDrop.DoDragDrop(m_DragInfo.VisualSource, data, m_DragInfo.Effects);
                 if (result == DragDropEffects.None)
                   dragHandler.DragCancelled();
@@ -1096,11 +1112,9 @@ namespace GongSolutions.Wpf.DragDrop
     private static void DropTarget_PreviewDragLeave(object sender, DragEventArgs e)
     {
       if (m_DragInfo == null || !GetAlwaysShowAdorner(m_DragInfo.VisualSource))
-      {
         DragAdorner = null;
-        EffectAdorner = null;
-        DropTargetAdorner = null;
-      }
+      EffectAdorner = null;
+      DropTargetAdorner = null;
     }
 
     private static void DropTarget_PreviewDragOver(object sender, DragEventArgs e)
