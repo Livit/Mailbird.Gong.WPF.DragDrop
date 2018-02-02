@@ -1,12 +1,14 @@
-﻿<Window x:Class="DefaultsExample.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:DefaultsExample"
-        xmlns:dd="urn:gong-wpf-dragdrop"
-        Title="Gong Solutions Drag'n'Drop: Defaults Example"
-        WindowStartupLocation="CenterScreen"
-        Height="700"
-        Width="900">
+﻿<Window 
+    x:Class="DefaultsExample.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:DefaultsExample"
+    xmlns:dd="urn:gong-wpf-dragdrop"
+    Title="Gong Solutions Drag'n'Drop: Defaults Example"
+    WindowStartupLocation="CenterScreen"
+    Height="700"
+    Width="900"
+    >
 
   <Window.DataContext>
     <local:Data />
@@ -44,6 +46,9 @@
               dd:DragDrop.IsDragSource="True"
               dd:DragDrop.IsDropTarget="True"
               dd:DragDrop.UseDefaultDragAdorner="True">
+        <TabControl.LayoutTransform>
+            <ScaleTransform ScaleX="1.5" ScaleY="1.5"/>
+        </TabControl.LayoutTransform>
     <TabItem Header="FlowDocument in ItemTemplate #123">
       <Grid>
         <Grid.ColumnDefinitions>

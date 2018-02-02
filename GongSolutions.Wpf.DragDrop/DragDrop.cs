@@ -966,7 +966,12 @@ namespace GongSolutions.Wpf.DragDrop
 
       if (DragAdorner != null)
       {
-        var tempAdornerPos = getPosition(DragAdorner.AdornedElement);
+        var pos = getPosition(DragAdorner.AdornedElement);
+        var transform = ((FrameworkElement)DragAdorner.AdornedElement).LayoutTransform;
+        var factor = 1.0;
+        if (transform is ScaleTransform)
+            factor = ((ScaleTransform)transform).ScaleX;
+        var tempAdornerPos = new Point(pos.X * factor, pos.Y * factor);
 
         if (tempAdornerPos.X >= 0 && tempAdornerPos.Y >= 0)
         {
@@ -982,8 +987,8 @@ namespace GongSolutions.Wpf.DragDrop
         if (m_DragInfo != null)
         {
           // move the adorner
-          var offsetX = _adornerSize.Width * -GetDragMouseAnchorPoint(m_DragInfo.VisualSource).X;
-          var offsetY = _adornerSize.Height * -GetDragMouseAnchorPoint(m_DragInfo.VisualSource).Y;
+          var offsetX = _adornerSize.Width * -GetDragMouseAnchorPoint(m_DragInfo.VisualSource).X * factor;
+          var offsetY = _adornerSize.Height * -GetDragMouseAnchorPoint(m_DragInfo.VisualSource).Y * factor;
           _adornerPos.Offset(offsetX, offsetY);
           var maxAdornerPosX = DragAdorner.AdornedElement.RenderSize.Width;
           var adornerPosRightX = (_adornerPos.X + _adornerSize.Width);
