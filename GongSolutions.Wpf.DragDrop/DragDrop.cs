@@ -930,7 +930,7 @@ namespace GongSolutions.Wpf.DragDrop
         EffectAdorner = null;
         DropTargetAdorner = null;
 
-        Mouse.OverrideCursor = null;
+        //Mouse.OverrideCursor = null;
       }
     }
 
