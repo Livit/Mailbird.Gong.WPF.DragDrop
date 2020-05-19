@@ -37,13 +37,13 @@ namespace GongSolutions.Wpf.DragDrop
       this.Effects = effects;
       m_AdornerLayer.IsOpen = true;
 
-      System.Windows.DragDrop.AddPreviewDragOverHandler(Application.Current.MainWindow, Handler);
+      System.Windows.DragDrop.AddPreviewDragOverHandler(Window.GetWindow(AdornedElement), Handler);
       System.Windows.DragDrop.AddPreviewDragOverHandler(m_AdornerLayer.Child, Handler);
     }
 
     private void Handler(object sender, DragEventArgs e)
     {
-      var position = e.GetPosition(Application.Current.MainWindow);
+      var position = e.GetPosition(Window.GetWindow(AdornedElement));
       m_AdornerLayer.PlacementRectangle = new Rect(position.X, position.Y, ActualWidth, ActualHeight);
     }
 
@@ -65,7 +65,7 @@ namespace GongSolutions.Wpf.DragDrop
     public void Detatch()
     {
       m_AdornerLayer.IsOpen = false;
-      System.Windows.DragDrop.RemovePreviewDragOverHandler(Application.Current.MainWindow, Handler);
+      System.Windows.DragDrop.RemovePreviewDragOverHandler(Window.GetWindow(AdornedElement), Handler);
       System.Windows.DragDrop.RemovePreviewDragOverHandler(m_AdornerLayer.Child, Handler);
     }
 

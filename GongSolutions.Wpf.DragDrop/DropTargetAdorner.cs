@@ -33,11 +33,21 @@ namespace GongSolutions.Wpf.DragDrop
       this.IsHitTestVisible = false;
       this.AllowDrop = false;
       this.SnapsToDevicePixels = true;
+      System.Windows.DragDrop.AddPreviewDragOverHandler(Window.GetWindow(AdornedElement), Handler);
+      System.Windows.DragDrop.AddPreviewDragOverHandler(m_AdornerLayer.Child, Handler);
+    }
+
+    private void Handler(object sender, DragEventArgs e)
+    {
+      var position = e.GetPosition(Window.GetWindow(AdornedElement));
+      m_AdornerLayer.PlacementRectangle = new Rect(position.X, position.Y, ActualWidth, ActualHeight);
     }
 
     public void Detatch()
     {
       m_AdornerLayer.IsOpen = false;
+      System.Windows.DragDrop.RemovePreviewDragOverHandler(Window.GetWindow(AdornedElement), Handler);
+      System.Windows.DragDrop.RemovePreviewDragOverHandler(m_AdornerLayer.Child, Handler);
     }
 
     public DropInfo DropInfo { get; set; }
