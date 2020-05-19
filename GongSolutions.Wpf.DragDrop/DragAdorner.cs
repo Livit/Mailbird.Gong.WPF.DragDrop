@@ -1,19 +1,50 @@
-﻿using System.Windows.Documents;
+﻿using System;
+using System.Windows.Documents;
 using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace GongSolutions.Wpf.DragDrop
 {
   internal class DragAdorner : Adorner
   {
+    static DragAdorner()
+    {
+      m_AdornerLayer = new Popup()
+      {
+        StaysOpen = true,
+        IsOpen = false,
+        Placement = PlacementMode.Custom,
+        PlacementTarget = Application.Current.MainWindow,
+        AllowsTransparency = true,
+        CustomPopupPlacementCallback = CustomPopupPlacementCallback,
+        IsHitTestVisible = false
+      };
+    }
+
+    private static CustomPopupPlacement[] CustomPopupPlacementCallback(Size popupsize, Size targetsize, Point offset)
+    {
+      return new[] { new CustomPopupPlacement(new Point(20, -popupsize.Height - 10), PopupPrimaryAxis.None) };
+    }
+
     public DragAdorner(UIElement adornedElement, UIElement adornment, DragDropEffects effects = DragDropEffects.None)
       : base(adornedElement)
     {
-      this.m_AdornerLayer = AdornerLayer.GetAdornerLayer(adornedElement);
-      this.m_AdornerLayer.Add(this);
+      m_AdornerLayer.Child = this;
       this.m_Adornment = adornment;
       this.IsHitTestVisible = false;
       this.Effects = effects;
+      m_AdornerLayer.IsOpen = true;
+
+      System.Windows.DragDrop.AddPreviewDragOverHandler(Application.Current.MainWindow, Handler);
+      System.Windows.DragDrop.AddPreviewDragOverHandler(m_AdornerLayer.Child, Handler);
+    }
+
+    private void Handler(object sender, DragEventArgs e)
+    {
+      var position = e.GetPosition(Application.Current.MainWindow);
+      m_AdornerLayer.PlacementRectangle = new Rect(position.X, position.Y, ActualWidth, ActualHeight);
     }
 
     public DragDropEffects Effects { get; private set; }
@@ -23,31 +54,25 @@ namespace GongSolutions.Wpf.DragDrop
       get { return this.m_MousePosition; }
       set
       {
-        if (this.m_MousePosition != value) {
+        if (this.m_MousePosition != value)
+        {
           this.m_MousePosition = value;
-          this.m_AdornerLayer.Update(this.AdornedElement);
+          UpdatePosition();
         }
       }
     }
 
     public void Detatch()
     {
-      this.m_AdornerLayer.Remove(this);
+      m_AdornerLayer.IsOpen = false;
+      System.Windows.DragDrop.RemovePreviewDragOverHandler(Application.Current.MainWindow, Handler);
+      System.Windows.DragDrop.RemovePreviewDragOverHandler(m_AdornerLayer.Child, Handler);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
       this.m_Adornment.Arrange(new Rect(finalSize));
       return finalSize;
-    }
-
-    public override GeneralTransform GetDesiredTransform(GeneralTransform transform)
-    {
-      var result = new GeneralTransformGroup();
-      result.Children.Add(base.GetDesiredTransform(transform));
-      result.Children.Add(new TranslateTransform(this.MousePosition.X - 4, this.MousePosition.Y - 4));
-
-      return result;
     }
 
     protected override Visual GetVisualChild(int index)
@@ -66,8 +91,12 @@ namespace GongSolutions.Wpf.DragDrop
       get { return 1; }
     }
 
-    private readonly AdornerLayer m_AdornerLayer;
+    private static readonly Popup m_AdornerLayer;
     private readonly UIElement m_Adornment;
     private Point m_MousePosition;
+
+    public void UpdatePosition()
+    {
+    }
   }
 }

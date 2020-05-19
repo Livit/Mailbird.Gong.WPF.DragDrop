@@ -924,7 +924,7 @@ namespace GongSolutions.Wpf.DragDrop
 
     private static void Window_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
     {
-      if (e.Action == DragAction.Cancel || e.EscapePressed || e.KeyStates != DragDropKeyStates.LeftMouseButton)
+      if (e.Action == DragAction.Cancel || e.EscapePressed || !e.KeyStates.HasFlag(DragDropKeyStates.LeftMouseButton))
       {
         DragAdorner = null;
         EffectAdorner = null;
@@ -1234,10 +1234,9 @@ namespace GongSolutions.Wpf.DragDrop
       get { return m_DragAdorner; }
       set
       {
-        if (m_DragAdorner != null) {
+        if(value == null && m_DragAdorner != null)
           m_DragAdorner.Detatch();
-        }
-
+        
         m_DragAdorner = value;
       }
     }
@@ -1247,9 +1246,8 @@ namespace GongSolutions.Wpf.DragDrop
       get { return m_EffectAdorner; }
       set
       {
-        if (m_EffectAdorner != null) {
+        if (value == null && m_EffectAdorner != null)
           m_EffectAdorner.Detatch();
-        }
 
         m_EffectAdorner = value;
       }
@@ -1260,7 +1258,7 @@ namespace GongSolutions.Wpf.DragDrop
       get { return m_DropTargetAdorner; }
       set
       {
-        if (m_DropTargetAdorner != null) {
+        if (value == null && m_DropTargetAdorner != null) {
           m_DropTargetAdorner.Detatch();
         }
 

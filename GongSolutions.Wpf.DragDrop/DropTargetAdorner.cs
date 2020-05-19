@@ -1,16 +1,35 @@
 ﻿using System;
 using System.Windows.Documents;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 
 namespace GongSolutions.Wpf.DragDrop
 {
   public abstract class DropTargetAdorner : Adorner
   {
+    static DropTargetAdorner()
+    {
+      m_AdornerLayer = new Popup()
+      {
+        StaysOpen = true,
+        IsOpen = false,
+        Placement = PlacementMode.Custom,
+        PlacementTarget = Application.Current.MainWindow,
+        AllowsTransparency = true,
+        CustomPopupPlacementCallback = CustomPopupPlacementCallback,
+        IsHitTestVisible = false
+      };
+    }
+
+    private static CustomPopupPlacement[] CustomPopupPlacementCallback(Size popupsize, Size targetsize, Point offset)
+    {
+      return new[] { new CustomPopupPlacement(new Point(20, -popupsize.Height - 10), PopupPrimaryAxis.None) };
+    }
+
     public DropTargetAdorner(UIElement adornedElement)
       : base(adornedElement)
     {
-      this.m_AdornerLayer = AdornerLayer.GetAdornerLayer(adornedElement);
-      this.m_AdornerLayer.Add(this);
+      m_AdornerLayer.Child = this;
       this.IsHitTestVisible = false;
       this.AllowDrop = false;
       this.SnapsToDevicePixels = true;
@@ -18,7 +37,7 @@ namespace GongSolutions.Wpf.DragDrop
 
     public void Detatch()
     {
-      this.m_AdornerLayer.Remove(this);
+      m_AdornerLayer.IsOpen = false;
     }
 
     public DropInfo DropInfo { get; set; }
@@ -34,6 +53,6 @@ namespace GongSolutions.Wpf.DragDrop
                                     .Invoke(new[] { adornedElement });
     }
 
-    private readonly AdornerLayer m_AdornerLayer;
+    private static readonly Popup m_AdornerLayer;
   }
 }
